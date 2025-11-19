@@ -5,55 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pixel Brush</title>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
+* {
+  box-sizing: border-box;
+}
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    color: #f5f5f5;
+  }
 
-      #settingsWrapper {
-        width: 300px;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 2;
-        background: rgba(255, 255, 255, 0.8);
-        padding: 10px;
-        border-radius: 8px;
-      }
+  /* Subtle CRT scanlines */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+    z-index: 5;
+  }
 
-      .slider {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 25px;
-        background: #d3d3d3;
-        outline: none;
-        opacity: 0.7;
-        margin: 10px 0;
-      }
+  label {
+    color: #ff94f8; /* neon pink cyberfem glow */
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
 
-      .slider:hover {
-        opacity: 1;
-      }
+  #settingsWrapper {
+    width: 320px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff94f8;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 25px #ff94f850, inset 0 0 10px #ff94f820;
+    backdrop-filter: blur(4px);
+  }
 
-      .slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 25px;
-        height: 25px;
-        background: #04aa6d;
-        cursor: pointer;
-      }
+  /* SLIDERS */
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #111;
+    border: 1px solid #ff94f8;
+    outline: none;
+    margin: 12px 0 20px;
+    position: relative;
+  }
 
-      .slider::-moz-range-thumb {
-        width: 25px;
-        height: 25px;
-        background: #04aa6d;
-        cursor: pointer;
-      }
+  .slider:hover {
+    box-shadow: 0 0 10px #ff94f8;
+  }
 
-      canvas {
-        display: block;
-      }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #ff94f8;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff94f8, 0 0 20px #ff94f8;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #ff94f8;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff94f8, 0 0 20px #ff94f8;
+  }
+
+
+  /* HIDE the original input completely */
+#filInput {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
+}
+
+/* Custom cyberpunk neon button */
+#fileLabel {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #ff94f8;
+  background: transparent;
+  color: #ff94f8;
+  text-align: center;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  transition: 0.2s;
+  box-shadow: 0 0 8px #ff94f830;
+}
+
+#fileLabel:hover {
+  background: #ff94f810;
+  box-shadow: 0 0 12px #ff94f860, inset 0 0 6px #ff94f820;
+}
+
+
+  /* CANVAS */
+  canvas {
+    display: block;
+    background: black;
+  }
+</style>
+
     </style>
   </head>
   <body>
@@ -77,6 +153,9 @@
         class="slider"
         id="pixelBlockSlider"
       />
+
+     <label id="fileLabel" for="filInput">Choose Image</label>
+<input type="file" id="filInput" accept="image/*" />
     </section>
 
     <canvas id="canvas"></canvas>
@@ -108,6 +187,22 @@
       const img = new Image();
       img.src = "img.jpg"; // ⚠️ Udskift med din egen billede-fil
 
+      const filInput = document.getElementById("filInput");
+
+      // Når brugeren vælger et billede
+      filInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          img.src = event.target.result; // brug det nye billede
+        };
+
+        reader.readAsDataURL(file);
+      });
+
       img.onload = () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -134,7 +229,7 @@
 
       // Pixelate on mousemove
       canvas.addEventListener("mousemove", (e) => {
-        if (e.buttons !== 1) return; // kun når musen holdes nede (venstre klik)
+        //if (e.buttons !== 1) return; // kun når musen holdes nede (venstre klik)
 
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
